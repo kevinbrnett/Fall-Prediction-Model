@@ -4,7 +4,6 @@ import pandas as pd
 import shap
 import matplotlib.pyplot as plt
 shap.initjs()
-plt.rcParams['savefig.bbox'] = 'tight'
 
 from sklearn.model_selection import train_test_split
 from sklearn.compose import make_column_selector
@@ -13,37 +12,55 @@ from sklearn.pipeline import make_pipeline
 from sklearn.compose import make_column_transformer
 from imblearn.pipeline import make_pipeline
 
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from lightgbm import LGBMClassifier
 
-from sklearn import metrics
-from sklearn.metrics import (auc,roc_auc_score, ConfusionMatrixDisplay, 
-                             precision_score, PrecisionRecallDisplay,
-                             recall_score, roc_curve,RocCurveDisplay, f1_score,
-                             accuracy_score, classification_report)
 
 ## Page configuration
 st.set_page_config(page_title='Fall Prediction App',
                   initial_sidebar_state='expanded', layout='wide')
 
-image_path = 'Visuals/logo.jpg'
+## CSS for custom font size
+st.markdown("""
+    <style>
+    h1 {
+        font-size: 140px;
+    }
+    h2 {
+        font-size: 80px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-col1, col2 = st.columns([2, 6])
+image_path = 'Visuals/logo.png'
+
+col1, col2 = st.columns([0.2,0.8])
 
 with col1:
-    st.image(image_path, width=200)
+    st.image(image_path, use_column_width=True)
 
 with col2:
     ## Title of the app
     st.title('Interactive Fall Prediction Dashboard')
 
-## About this app dropdown
-with st.expander('About this app'):
-  st.markdown('**How to use the app?**')
-  st.info('This app is intended to make predictions for if someone will fall, stumble, or not fall. '
-          'To make a prediction the user will input the feature information into the sidebar and hit the '
-          'run prediction button.')
+## Informational tabs about the app
+tab1, tab2, tab3, tab4 = st.tabs(['About', 'What is Fall?', 'Importance', 'Risk Factors'])
+
+with tab1:
+    with st.container(border=True):
+        st.header('About this App')
+        st.write('this is a placeholder for information on the app. slkdjfsladjflaksjdflkajsldjflaasdflkasjdflasjdflasjdflkajsdflkajsdlfjaslkdfjlaskdjfalskdjflasdjkflasdjkflasdjflasjkdlasdjflaskdj')
+
+with tab2:
+    with st.container(border=True):
+        st.header('Definition of a Fall')
+    
+with tab3:
+    with st.container(border=True):
+        st.header('Importance of Falls in Hospital')
+
+with tab4:
+    with st.container(border=True):
+        st.header('Who is at Risk for Falling?')
     
 ## Load dataset
 df = pd.read_csv('Data/ml_df.csv')
@@ -61,13 +78,42 @@ df.rename(columns={'distance (cm)':'Distance (cm)',
                    'decision':'Decision'
                   }, inplace=True)
 
-df_target_group = df.groupby('Decision').mean().round(2)
+## Calculations for fall rate percent
+num_falls = df['Decision'].loc[df['Decision'] == 2].sum()
+num_other = df['Decision'].loc[df['Decision'] != 2].sum()
+total = num_falls + num_other
+fall_rate = ((num_falls / total) *100).round(2)
 
-st.subheader('Average Feature Values for Each Class')
-st.dataframe(df_target_group)
+## Statistic tiles
+## Row with 3 coulmn tiles
+col1, col2, col3 = st.columns(3)
+
+## Function to create a container with a centered header and text
+def create_container(column, header, text):
+    with column:
+        with st.container(height=280, border=True):
+            st.markdown(f"""
+                <style>
+                .centered-text {{
+                    text-align: center;
+                }}
+                </style>
+                <div class="centered-text">
+                    <h2>{header}</h2>
+                    <h2>{text}</h2>
+                </div>
+            """, unsafe_allow_html=True)
+
+header1 = 'Fall Rate'            
+text1 = f'{fall_rate} %'
+
+# Create containers with centered headers and texts
+create_container(col1, header1, text1)
+create_container(col2, header1, text1)
+create_container(col3, header1, text1)
 
 ## Input widgets for features
-st.sidebar.subheader('Model Input Features')
+st.sidebar.subheader('Variables for Model Prediction')
 
 ## Distance with slider and number input
 distance = st.sidebar.slider('Distance (cm):', min(df['Distance (cm)']), 
@@ -216,9 +262,6 @@ st.subheader(f'SHAP Summary Plot for Class {class_option}')
 fig, ax = plt.subplots()
 shap.summary_plot(shap_values[class_option], X_test, plot_type='bar', show=False)
 st.pyplot(fig)
-
-
-
 
 
 
