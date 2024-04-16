@@ -55,9 +55,43 @@ tab1, tab2, tab3, tab4 = st.tabs(['About', 'What is Fall?', 'Importance', 'Risk 
 with tab1:
     with st.container(border=True):
         st.header('About this App')
+            
+      
         st.write('The purpose of this app is to make new predictions for an individual\'s fall risk based on six variables. ')
-        st.write('**Data Dictionary** Distance: distance from nearest object, Pressure: if pressure threshold was met or not, Accelerometer: if accelerometer threshold was met or not, Blood sugar: blood glucose level, Heart rate: heart rate in beats per minute, Spo2: oxygen saturation percent, Decision: target variable (no fall, stumble, fall)')
         st.write('In order to make predictions fill in the variables in the side bar and click the run prediction button. Prediction results will appear in the model prediction tile after calculating.')
+#         st.write('**Data Dictionary** Distance: distance from nearest object, Pressure: if pressure threshold was met or not, Accelerometer: if accelerometer threshold was met or not, Blood sugar: blood glucose level, Heart rate: heart rate in beats per minute, Spo2: oxygen saturation percent, Decision: target variable (no fall, stumble, fall)')
+    # Define the data for the Data Dictionary
+        data = {
+        "Variable": ["Distance", "Pressure", "Accelerometer", "Blood sugar", "Heart rate", "Spo2", "Decision"],
+        "Description": [
+            "Distance from nearest object",
+            "If pressure threshold was met or not",
+            "If accelerometer threshold was met or not",
+            "Blood glucose level",
+            "Heart rate in beats per minute",
+            "Oxygen saturation percent",
+            "Target variable (no fall, stumble, fall)"
+            ]
+        }
+
+        # Create a DataFrame
+        dict_table = pd.DataFrame(data)
+
+        # Reset the index of the DataFrame to remove it
+        dict_table.reset_index(drop=True, inplace=True)
+
+        # Function to apply alternating row colors
+        def alternating_row_colors(s, color1, color2):
+            return [f'background-color: {color1}' if i % 2 == 0 else f'background-color: {color2}' for i in range(len(s))]
+
+        # Apply the styling to the DataFrame
+        styled_df = dict_table.style.apply(alternating_row_colors, color1='#9ABDFF', color2='#ebac6c', axis=0)
+
+        # Display the DataFrame in Streamlit without the index
+        st.subheader('Data Dictionary')
+        st.table(styled_df)
+
+        st.caption("This table provides a detailed description of the variables used in the dataset.")
 
 with tab2:
     with st.container(border=True):
@@ -71,7 +105,13 @@ with tab3:
 with tab4:
     with st.container(border=True):
         st.header('Who is at Risk for Falling?')
-    
+        risk_factors = [ "Older than 85","Weight","History of falls","Mobility problems","Use of assistive devices",
+                       "Medications","Mental status","Incontinence","Vision impairment"]
+
+        # Creating a markdown string for the list
+        markdown_list = "\n".join(f"- {factor}" for factor in risk_factors)
+        st.markdown(markdown_list)
+
 ## Load dataset
 df = pd.read_csv('Data/ml_df.csv')
 
@@ -507,6 +547,7 @@ with col3:
                     <h2>Most Important Factor</h2>
                     </div>
                 """, unsafe_allow_html=True)
+
 
 
 
