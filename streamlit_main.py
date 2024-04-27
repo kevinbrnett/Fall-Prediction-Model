@@ -1,5 +1,6 @@
 import streamlit as st
 import time
+from joblib import load
 import numpy as np
 import pandas as pd
 import shap
@@ -19,9 +20,63 @@ from imblearn.pipeline import make_pipeline
 from sklearn.ensemble import RandomForestClassifier
 
 
-## Page configuration
+                        ### PAGE CONFIGURATION ###
+    
 st.set_page_config(page_title='Fall Prediction App',
                   initial_sidebar_state='expanded', layout='wide')
+
+                        ### CUSTOM CSS FOR STYLING ###
+    
+# Styling st.title text
+title = """
+<style>
+    h1 {
+        font-size: 160px !important;
+    }
+</style>
+"""
+
+tabs = '''
+<style>
+    .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+    font-size: 30px !important;
+    }
+</style>
+'''
+
+header =  """
+<style>
+    h2 {
+        font-size: 80px !important;
+    }
+</style>
+"""
+
+ml_tile = """
+<style>
+.centered-text {
+    text-align: center;  /* Centers text horizontally in the container */
+    font-size: 80px !important;
+}
+</style>
+"""
+
+bold_center = """
+<style>
+.bold-text {
+    text-align: center;  /* Centers text horizontally in the container */
+    font-weight: bold;
+    font-size: 80px !important;
+}
+</style>
+"""
+
+# Inject CSS with markdown
+st.markdown(title, unsafe_allow_html=True)
+st.markdown(tabs, unsafe_allow_html=True)
+st.markdown(header, unsafe_allow_html=True)
+st.markdown(ml_tile, unsafe_allow_html=True)
+st.markdown(bold_center, unsafe_allow_html=True)
 
                         ### APP TITLE AND LOGO ###
     
@@ -35,13 +90,13 @@ with col2:
     ## Title of the app
     st.title('Interactive Fall Prediction Dashboard')
     
-## Initialize session state
-'session state object', st.session_state
+# ## Initialize session state
+# 'session state object', st.session_state
 
                         ### FUNCTIONS ###
     
 # Define a function to prepare data, train the model, and make a prediction
-def make_prediction(distance, pressure, hrv, blood_sugar, spo2, accelerometer, df):
+def make_prediction(df, distance, pressure, hrv, blood_sugar, spo2, accelerometer):
     # Prepare the observation for prediction
     feature_vector = pd.DataFrame([[distance, pressure, hrv, blood_sugar, spo2,
                                     accelerometer]], columns=['Distance (cm)', 'Pressure',
@@ -49,13 +104,13 @@ def make_prediction(distance, pressure, hrv, blood_sugar, spo2, accelerometer, d
                                                               'Blood Sugar Level (mg/dL)',
                                                               'SpO2 (%)', 'Accelerometer'])
 
-    # Split X and y
+        # Split X and y
     X = df.drop(columns=['Decision'])
     y = df['Decision']
 
     # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.3,
-                                                        random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3,
+                                                            random_state=42)
 
     # Model preprocessing and pipeline
     scaler = StandardScaler()
@@ -83,33 +138,25 @@ def make_prediction(distance, pressure, hrv, blood_sugar, spo2, accelerometer, d
     confidence_scores = {class_mapping[i]: prob for i, prob in
                          enumerate(prediction_proba[0])}
     prediction_label = class_mapping[prediction[0]]
-    
-    ## Calculate SHAP values
-    # Feature names extracted from the training set
-    feature_names = X_train.columns
-    
-    # Transform the test set
-    X_test_df = pd.DataFrame(rf_pipe[:-1].transform(X_test),
-                             columns=feature_names,
-                             index=X_test.index)
-    
-    instance_index = 0
-    instance_data = X_test_df.iloc[[instance_index]]
-    predictions = rf_pipe.predict(instance_data)
-    predicted_class_index = np.argmax(predictions, axis=1)[0]
-               
 
     # Access the RandomForestClassifier from the pipeline
     rf_classifier = rf_pipe.named_steps['randomforestclassifier']
 
-    # Create a SHAP explainer
+    # Calculate SHAP values
     explainer = shap.TreeExplainer(rf_classifier)
-    shap_values = explainer.shap_values(instance_data)
-    
-    
-    # Return prediction labels and confidence scores
-    return prediction_label, confidence_scores, shap_values, X_test_df
-                            
+    shap_values = explainer.shap_values(feature_vector)
+
+    # Handle multi-class scenario appropriately
+    if isinstance(shap_values, list):
+        shap_sum = np.sum([np.abs(sv) for sv in shap_values], axis=0)
+    else:
+        shap_sum = np.abs(shap_values)
+
+    max_index = np.argmax(shap_sum)
+
+    most_important_feature = feature_vector.columns[max_index]
+
+    return prediction_label, confidence_scores, most_important_feature
     
 ## Load data
 df = pd.read_csv('Data/ml_df.csv')
@@ -132,31 +179,73 @@ df.rename(columns={'distance (cm)':'Distance (cm)',
 tab1, tab2, tab3, tab4 = st.tabs(['About', 'What is Fall?', 'Importance', 'Risk Factors'])
 
 with tab1:
-    with st.container(border=False):
-        st.header('About this App')
-            
-      
-        st.write('The purpose of this app is to make new predictions for an individual\'s fall risk based on six variables. ')
-        st.write('In order to make predictions fill in the variables in the side bar and click the run prediction button. Prediction results will appear in the model prediction tile after calculating.')
+    col1, col2 = st.columns(2)
+    with col1:
+        with st.container(border=False):
+            st.header('About this App')
+
+            st.info('The purpose of this app is to make new predictions for an individual\'s fall risk based on six variables.\n\nIn order to make predictions fill in the variables in the side bar and click the run prediction button.\n\nPrediction results will appear in the model prediction tile after calculating.')
 
 with tab2:
-    with st.container(border=False):
-        st.header('Definition of a Fall')
-        st.write('A fall is defined as a “sudden, not intentional, and unexpected movement from orthostatic position, from seat to position, or from clinical position”.')
+    col1, col2 = st.columns(2)
+    with col1:
+        with st.container(border=False):
+            st.header('Definition of a Fall')
+            st.info('A fall is defined as a “sudden, not intentional, and unexpected movement from orthostatic position, from seat to position, or from clinical position”.')
     
 with tab3:
-    with st.container(border=False):
-        st.header('Importance of Falls in Hospital')
+    col1, col2 = st.columns(2)
+    with col1:
+        with st.container(border=False):
+            st.header('Importance of Falls in Hospitals')
+            st.info('Falls directly cost hospitals $50 billion annually in the U.S. \n\nPatients who fall while in the hospital have $13,316 higher operational costs. \n\nCosts associated with falls are not re-imbursed by Medicare or Medicaid.')
 
 with tab4:
-    with st.container(border=False):
-        st.header('Who is at Risk for Falling?')
-        risk_factors = [ "Older than 85","Weight","History of falls",
-                        "Mobility problems","Use of assistivedevices",
-                        "Medications","Mental status","Incontinence","Vision impairment"]
-    # Creating a markdown string for the list
-        markdown_list = "\n".join(f"- {factor}" for factor in risk_factors)
-        st.markdown(markdown_list)
+    col1, col2 = st.columns(2)
+    with col1:
+        with st.container(border=False):
+            st.header('Who is at Risk for Falling?')
+            st.info('1. Older than 85\n\n2. Weight\n\n3. History of falls\n\n4. Mobility problems\n\n5. Use of assistive devices\n\n6. Medications\n\n7. Mental status\n\n8. Incontinence\n\n9. Vision impairment')
+
+st.divider()
+
+
+                            ### STATIC TILES ###
+
+col1, col2 = st.columns(2)
+
+## Calculate value count percents for 'Decision' column
+# Calculate the count of each unique value
+value_counts = df['Decision'].value_counts()
+
+# Calculate the percentage of each value
+percentages = (value_counts / len(df['Decision']) * 100).round(2)
+
+
+with col1:
+    with st.container(height=340, border=True):
+        
+        st.markdown('<div data-marker="unique-marker"></div>', unsafe_allow_html=True)
+
+        ## Text in tile
+        st.markdown('<p class="bold-text">Fall Rate</p>',
+                    unsafe_allow_html=True)
+        st.markdown(f'<p class="centered-text">{percentages[0]}%</p>',
+                    unsafe_allow_html=True)
+with col2:
+    with st.container(height=340, border=True):
+      
+        ## Calculating stumble rate percent
+        num_stumble = df['Decision'].loc[df['Decision'] == 0].sum()
+        num_other = df['Decision'].loc[df['Decision'] != 0].sum()
+        total = num_stumble + num_other
+        stumble_rate = ((num_stumble / total) *100).round(2)
+
+        ## Text in tile
+        st.markdown('<p class="bold-text">Stumble Rate</p>',
+                    unsafe_allow_html=True)
+        st.markdown(f'<p class="centered-text">{percentages[1]}%</p>',
+                    unsafe_allow_html=True)
 
                                 ### SIDEBAR ###
             
@@ -210,15 +299,15 @@ if 'accelerometer_slider' not in st.session_state:
 
 
 if st.sidebar.button('Run Prediction'):
-    prediction_label, confidence_scores, shap_values, X_test_df = make_prediction(distance, pressure, hrv,
-                                                          blood_sugar, spo2, accelerometer, df)  
+    prediction_label, confidence_scores, most_important_feature = make_prediction(df, distance, pressure, hrv,
+                                                                                  blood_sugar, spo2, accelerometer)  
     max_confidence_label = max(confidence_scores, key=confidence_scores.get)
     max_confidence_score = confidence_scores[max_confidence_label]
     st.session_state['predict_button_clicked'] = True
             
                                  ### EDA HISTOGRAM ###
 
-with st.container(border=True):
+with st.container(border=False):
     st.header('Distribution of the Data')
     
     col1, col2 = st.columns([0.6,0.4])
@@ -274,7 +363,8 @@ with st.container(border=True):
 
         # Display the plot
         st.plotly_chart(fig, use_container_width=True)
-        
+
+st.divider()
                                       ### CORRELATION MATRIX ###
 # Compute the correlation matrix
 corr = df.corr()
@@ -286,7 +376,7 @@ custom_color_scale = [
     [1.0, '#FF7B13']   # End at blue at 1
 ]
 
-with st.container(border=True):
+with st.container(border=False):
     st.header('Correlation in the Data')
     
     # Create the heatmap with values displayed
@@ -324,15 +414,16 @@ with st.container(border=True):
 
 
     # Display the heatmap in Streamlit
-    st.plotly_chart(fig, use_container_width=False)
+    st.plotly_chart(fig, use_container_width=True)
 
+st.divider()
                                     ### PHYSIOLOGIC BOX PLOTS ###              
 
 # Define custom color palette
 colors = ['#FF7B13', '#E32A2A', '#216CD3']
 cols = ['Heart Rate (bpm)', 'Blood Sugar Level (mg/dL)', 'SpO2 (%)']
 
-with st.container (border=True):
+with st.container (border=False):
     st.header('Trends in Physiologic Variables') 
     
     fig = make_subplots(rows=1, cols=3)
@@ -366,8 +457,10 @@ with st.container (border=True):
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    with st.container(height=370, border=True):
-      
+    with st.container(height=410, border=True):
+       
+        st.markdown('<p class="bold-text">Model Prediction</p>', unsafe_allow_html=True)
+
         # Initialize or use a placeholder for the prediction result
         prediction_placeholder = st.empty()
         prediction_placeholder.text('Input values in the sidebar and click the run prediction button to calculate')
@@ -375,40 +468,41 @@ with col1:
         # Check if the prediction button was clicked
         if 'predict_button_clicked' in st.session_state:
             # Display a loading message or similar feedback
-            prediction_placeholder.text('Calculating prediction...')
+            prediction_placeholder.text('Calculating Prediction...')
 
             # Simulate a delay for prediction processing
             time.sleep(2)
-            
+
             ## Show output
-            prediction_placeholder.write(prediction_label)
+            prediction_placeholder.markdown(f'<p class="centered-text">{prediction_label}</p>', unsafe_allow_html=True)
             
 with col2:
-    with st.container(height=370, border=True):
+    with st.container(height=410, border=True):
+
+        st.markdown('<p class="bold-text">Confidence Score</p>', unsafe_allow_html=True)
+
         # Initialize or use a placeholder for the prediction result
         prediction_placeholder = st.empty()
 
         # Check if the prediction button was clicked
         if 'predict_button_clicked' in st.session_state:
-            
+
             ## Show output
-            prediction_placeholder.write(max_confidence_score)
+            prediction_placeholder.markdown(f'<p class="centered-text">{max_confidence_score}</p>', unsafe_allow_html=True)
         
 with col3:
-    with st.container(height=370, border=True):
-            # Initialize or use a placeholder for the prediction result
+    with st.container(height=410, border=True):
+        
+        st.markdown('<p class="bold-text">Most Important Feature</p>', unsafe_allow_html=True)
+
+        # Initialize or use a placeholder for the prediction result
         prediction_placeholder = st.empty()
 
         # Check if the prediction button was clicked
         if 'predict_button_clicked' in st.session_state:
-            
+
             ## Show output
-            prediction_placeholder.write('tbd')
-            
-    # Find the most important feature for the predicted class
-    most_important_feature_index = np.argmax(np.abs(shap_values[predicted_class_index][0]))
-    most_important_feature = X_test_df.columns[most_important_feature_index]
-    st.write(f'Most Important Feature for Predicted Class: {most_important_feature}')
+            prediction_placeholder.markdown(f'<p class="centered-text">{most_important_feature}</p>', unsafe_allow_html=True)
 
 
 
