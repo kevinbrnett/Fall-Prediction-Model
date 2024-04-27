@@ -417,7 +417,11 @@ with st.container(border=False):
     st.plotly_chart(fig, use_container_width=True)
 
 st.divider()
-                                    ### PHYSIOLOGIC BOX PLOTS ###              
+                                    ### PHYSIOLOGIC BOX PLOTS ###   
+    
+# Map 'Decision' to text labels
+decision_mapping = {0: 'No Fall', 1: 'Stumble', 2: 'Fall'}
+df['Decision'] = df['Decision'].map(decision_mapping)
 
 # Define custom color palette
 colors = ['#FF7B13', '#E32A2A', '#216CD3']
@@ -451,6 +455,11 @@ with st.container (border=False):
 
     # Display the plot
     st.plotly_chart(fig, use_container_width=True)
+
+
+    # Update y-axis to show custom labels for categorical data
+    yaxis_labels = ['No Fall', 'Stumble', 'Fall']
+
 
                             ### MACHINE LEARNING TILES ###
     
