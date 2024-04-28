@@ -212,7 +212,7 @@ st.divider()
 
                             ### STATIC TILES ###
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 ## Calculate value count percents for 'Decision' column
 # Calculate the count of each unique value
@@ -245,6 +245,18 @@ with col2:
         st.markdown('<p class="bold-text">Stumble Rate</p>',
                     unsafe_allow_html=True)
         st.markdown(f'<p class="centered-text">{percentages[1]}%</p>',
+                    unsafe_allow_html=True)
+        
+with col3:
+    with st.container(height=340, border=True):
+        total_row = df.shape[0]
+        
+        st.markdown('<div data-marker="unique-marker"></div>', unsafe_allow_html=True)
+
+        ## Text in tile
+        st.markdown('<p class="bold-text">Total Admitted</p>',
+                    unsafe_allow_html=True)
+        st.markdown(f'<p class="centered-text">{total_row}</p>',
                     unsafe_allow_html=True)
 
                                 ### SIDEBAR ###
