@@ -16,6 +16,18 @@ from sklearn.compose import make_column_transformer
 from imblearn.pipeline import make_pipeline
 
 st.set_option('deprecation.showPyplotGlobalUse', False)
+st.set_page_config(layout='wide')
+
+def interpret_prediction(prediction):
+    if prediction == 0:
+        return "No Fall Risk"
+    elif prediction == 1:
+        return "Risk of Stumbling"
+    elif prediction == 2:
+        return "Risk of Falling"
+    else:
+        return "Invalid Prediction"  # Handle unexpected values
+
 
 ## Load Data
 data = pd.read_csv('Data/ml_df.csv')
@@ -70,12 +82,16 @@ model = make_pipeline(preprocessor, rf)
 ## Fit the model
 model.fit(X_train, y_train)
 
+## Initialize button session state
+if 'button_clicked' not in st.session_state: 
+    st.session_state['button_clicked'] = 0
+
 ## Button to make predictions
-if st.sidebar.button('Predict'):
-    prediction = model.predict(user_input)
-    prediction_probability = model.predict_proba(user_input)
-    st.write(f'Prediction: Class {prediction[0]}')
-    
+if st.sidebar.button('Run Prediction'):
+        st.session_state.button_clicked == 1:
+            prediction = model.predict(user_input)
+            prediction_probability = model.predict_proba(user_input)
+
     # Formatting the probability output for clarity
     proba_df = pd.DataFrame(prediction_probability, columns=model.classes_)
     st.write('Prediction Probabilities:')
@@ -104,3 +120,28 @@ fig.update_layout(xaxis_title='Feature Importance Value', yaxis_title='Feature N
 
 # Show the plot
 st.plotly_chart(fig)
+
+
+                                                ### MACHINE LEARNING TILES ###
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    with st.container():
+        st.subheader('Model Prediction')
+        
+        if st.session_state.button_clicked == 0:
+            # Create a placeholder
+            placeholder = st.empty()
+            placeholder.text("waiting for prediction...")
+        
+        if st.session_state.button_clicked == 1:
+            prediction = interpret_prediction(prediction)
+            placeholder.write(prediction)
+
+with col2:
+    with st.container():
+        st.subheader('Prediction Probability')
+        
+with col3:
+    with st.container():
+        st.subheader('Most Important Feature')
