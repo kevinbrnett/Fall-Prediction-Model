@@ -22,16 +22,6 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 ## Initialize session state
 'session state object', st.session_state
 
-def interpret_prediction(prediction):
-    if prediction == 0:
-        return "No Fall Risk"
-    elif prediction == 1:
-        return "Risk of Stumbling"
-    elif prediction == 2:
-        return "Risk of Falling"
-    else:
-        return "Invalid Prediction"  # Handle unexpected values
-
 
 ## Load Data
 data = pd.read_csv('Data/ml_df.csv')
@@ -43,14 +33,24 @@ y = data['decision']
 ## Sidebar
 st.sidebar.header('Specify Input Parameters')
 
+def interpret_prediction(prediction):
+    if prediction == 0:
+        return "No Fall Risk"
+    elif prediction == 1:
+        return "Risk of Stumbling"
+    elif prediction == 2:
+        return "Risk of Falling"
+    else:
+        return "Invalid Prediction"  # Handle unexpected values
+
 def user_input_features():
 
-    distance = st.sidebar.slider('Distance (cm)', X.distance.min(), X.distance.max(), X.distance.mean())
-    pressure = st.sidebar.slider('Pressure', 0, 2, 1)
-    hrv = st.sidebar.slider('Heart Rate (bpm)', X.hrv.min(), X.hrv.max(), X.hrv.mean())
-    blood_sugar = st.sidebar.slider('Blood Sugar Level (mg/dL)', X.blood_sugar.min(), X.blood_sugar.max(), X.blood_sugar.mean())
-    spo2 = st.sidebar.slider('SpO2 (%)', X.spo2.min(), X.spo2.max(), X.spo2.mean())
-    accelerometer = st.sidebar.slider('Accelerometer', 0, 1, 1)
+    distance = st.sidebar.slider('Distance (cm)', X.distance.min(), X.distance.max(), X.distance.mean(), key='distance')
+    pressure = st.sidebar.slider('Pressure', 0, 2, 1, key='pressure')
+    hrv = st.sidebar.slider('Heart Rate (bpm)', X.hrv.min(), X.hrv.max(), X.hrv.mean(), key='hrv')
+    blood_sugar = st.sidebar.slider('Blood Sugar Level (mg/dL)', X.blood_sugar.min(), X.blood_sugar.max(), X.blood_sugar.mean(), key='blood_sugar')
+    spo2 = st.sidebar.slider('SpO2 (%)', X.spo2.min(), X.spo2.max(), X.spo2.mean(), key='spo2')
+    accelerometer = st.sidebar.slider('Accelerometer', 0, 1, 1, key='accelerometer')
 
 
     data = {'distance': distance,
@@ -87,7 +87,16 @@ model = make_pipeline(preprocessor, rf)
 model.fit(X_train, y_train)
 
 ## Button to make predictions
-if st.sidebar.button('Run Prediction'):
+if 'button_clicked' not in st.session_state:
+    st.session_state.button_clicked = False
+
+def click_button():
+    st.session_state.button_clicked = True
+
+
+prediction_button = st.sidebar.button('Run Prediction', on_click=click_button())
+
+if prediction_button:
 
     prediction = model.predict(user_input)
     prediction_probability = model.predict_proba(user_input)
@@ -131,9 +140,11 @@ with col1:
         
         # Create a placeholder
         placeholder = st.empty()
+        
         placeholder.text("waiting for prediction...")
-        prediction = interpret_prediction(prediction)
-        placeholder.write(prediction)
+        
+        if st.session_state.button_clicked:
+            st.write(interpret_prediction(prediction))
 
 with col2:
     with st.container():
