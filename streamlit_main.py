@@ -15,8 +15,12 @@ from sklearn.pipeline import make_pipeline
 from sklearn.compose import make_column_transformer
 from imblearn.pipeline import make_pipeline
 
+## Page configuration
+st.set_page_config(page_title='Fall Prediction App', initial_sidebar_state='expanded', layout='wide')
 st.set_option('deprecation.showPyplotGlobalUse', False)
-st.set_page_config(layout='wide')
+
+## Initialize session state
+'session state object', st.session_state
 
 def interpret_prediction(prediction):
     if prediction == 0:
@@ -82,15 +86,11 @@ model = make_pipeline(preprocessor, rf)
 ## Fit the model
 model.fit(X_train, y_train)
 
-## Initialize button session state
-if 'button_clicked' not in st.session_state: 
-    st.session_state['button_clicked'] = 0
-
 ## Button to make predictions
 if st.sidebar.button('Run Prediction'):
-        st.session_state.button_clicked == 1:
-            prediction = model.predict(user_input)
-            prediction_probability = model.predict_proba(user_input)
+
+    prediction = model.predict(user_input)
+    prediction_probability = model.predict_proba(user_input)
 
     # Formatting the probability output for clarity
     proba_df = pd.DataFrame(prediction_probability, columns=model.classes_)
@@ -129,14 +129,11 @@ with col1:
     with st.container():
         st.subheader('Model Prediction')
         
-        if st.session_state.button_clicked == 0:
-            # Create a placeholder
-            placeholder = st.empty()
-            placeholder.text("waiting for prediction...")
-        
-        if st.session_state.button_clicked == 1:
-            prediction = interpret_prediction(prediction)
-            placeholder.write(prediction)
+        # Create a placeholder
+        placeholder = st.empty()
+        placeholder.text("waiting for prediction...")
+        prediction = interpret_prediction(prediction)
+        placeholder.write(prediction)
 
 with col2:
     with st.container():
