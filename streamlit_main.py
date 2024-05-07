@@ -1,3 +1,4 @@
+import time
 import streamlit as st
 import pandas as pd
 import shap
@@ -22,6 +23,9 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 ## Initialize session state
 'session state object', st.session_state
 
+## Button to make predictions
+if 'button_clicked' not in st.session_state:
+    st.session_state.button_clicked = False
 
 ## Load Data
 data = pd.read_csv('Data/ml_df.csv')
@@ -32,6 +36,16 @@ y = data['decision']
 
 ## Sidebar
 st.sidebar.header('Specify Input Parameters')
+
+distance = st.sidebar.slider('Distance (cm)', X.distance.min(), X.distance.max(), X.distance.mean(), key='distance')
+pressure = st.sidebar.slider('Pressure', 0, 2, 1, key='pressure')
+hrv = st.sidebar.slider('Heart Rate (bpm)', X.hrv.min(), X.hrv.max(), X.hrv.mean(), key='hrv')
+blood_sugar = st.sidebar.slider('Blood Sugar Level (mg/dL)', X.blood_sugar.min(), X.blood_sugar.max(), X.blood_sugar.mean(), key='blood_sugar')
+spo2 = st.sidebar.slider('SpO2 (%)', X.spo2.min(), X.spo2.max(), X.spo2.mean(), key='spo2')
+accelerometer = st.sidebar.slider('Accelerometer', 0, 1, 1, key='accelerometer')
+
+def click_button():
+    st.session_state.button_clicked = True
 
 def interpret_prediction(prediction):
     if prediction == 0:
@@ -44,14 +58,6 @@ def interpret_prediction(prediction):
         return "Invalid Prediction"  # Handle unexpected values
 
 def user_input_features():
-
-    distance = st.sidebar.slider('Distance (cm)', X.distance.min(), X.distance.max(), X.distance.mean(), key='distance')
-    pressure = st.sidebar.slider('Pressure', 0, 2, 1, key='pressure')
-    hrv = st.sidebar.slider('Heart Rate (bpm)', X.hrv.min(), X.hrv.max(), X.hrv.mean(), key='hrv')
-    blood_sugar = st.sidebar.slider('Blood Sugar Level (mg/dL)', X.blood_sugar.min(), X.blood_sugar.max(), X.blood_sugar.mean(), key='blood_sugar')
-    spo2 = st.sidebar.slider('SpO2 (%)', X.spo2.min(), X.spo2.max(), X.spo2.mean(), key='spo2')
-    accelerometer = st.sidebar.slider('Accelerometer', 0, 1, 1, key='accelerometer')
-
 
     data = {'distance': distance,
             'pressure': pressure,
@@ -86,20 +92,15 @@ model = make_pipeline(preprocessor, rf)
 ## Fit the model
 model.fit(X_train, y_train)
 
-## Button to make predictions
-if 'button_clicked' not in st.session_state:
-    st.session_state.button_clicked = False
-
-def click_button():
-    st.session_state.button_clicked = True
-
-
-prediction_button = st.sidebar.button('Run Prediction', on_click=click_button())
+prediction_button = st.sidebar.button('Run Prediction')
 
 if prediction_button:
 
-    prediction = model.predict(user_input)
-    prediction_probability = model.predict_proba(user_input)
+    if st.session_state.button_clicked == True:
+        prediction = model.predict(user_input)
+        prediction_probability = model.predict_proba(user_input)
+
+        calculated_prediction = interpret_prediction(prediction)
 
     # Formatting the probability output for clarity
     proba_df = pd.DataFrame(prediction_probability, columns=model.classes_)
@@ -137,14 +138,16 @@ col1, col2, col3 = st.columns(3)
 with col1:
     with st.container():
         st.subheader('Model Prediction')
-        
         # Create a placeholder
         placeholder = st.empty()
+        placeholder.text("Select prediction parameters and click 'Run Prediction' button")
         
-        placeholder.text("waiting for prediction...")
-        
-        if st.session_state.button_clicked:
-            st.write(interpret_prediction(prediction))
+        if st.session_state.button_clicked == True:
+            with st.spinner('Calculating Prediction...'):
+                time.sleep(2)
+
+            st.write(calculated_prediction)
+           
 
 with col2:
     with st.container():
