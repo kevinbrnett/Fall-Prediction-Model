@@ -25,7 +25,7 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 
 ## Button to make predictions
 if 'button_clicked' not in st.session_state:
-    st.session_state.button_clicked = 0
+    st.session_state.button_clicked = False
 
 ## Load Data
 data = pd.read_csv('Data/ml_df.csv')
@@ -44,6 +44,8 @@ blood_sugar = st.sidebar.slider('Blood Sugar Level (mg/dL)', X.blood_sugar.min()
 spo2 = st.sidebar.slider('SpO2 (%)', X.spo2.min(), X.spo2.max(), X.spo2.mean(), key='spo2')
 accelerometer = st.sidebar.slider('Accelerometer', 0, 1, 1, key='accelerometer')
 
+def button_clicked():
+    st.session_state.button_clicked = True
 
 def interpret_prediction(prediction):
     if prediction == 0:
@@ -68,9 +70,6 @@ def user_input_features():
 
 user_input = user_input_features()
 
-## Print specified input parameters
-st.header('Specified Input parameters')
-st.write(user_input)
 st.divider()
 
 ## Build Random Forest Model
@@ -90,14 +89,12 @@ model = make_pipeline(preprocessor, rf)
 ## Fit the model
 model.fit(X_train, y_train)
 
-prediction_button = st.sidebar.button('Run Prediction')
+prediction = model.predict(user_input)
+
+prediction_button = st.sidebar.button('Run Prediction', on_click=button_clicked())
 
 if prediction_button:
-
-    prediction = model.predict(user_input)
     prediction_probability = model.predict_proba(user_input)
-
-    calculated_prediction = interpret_prediction(prediction)
 
     # Formatting the probability output for clarity
     proba_df = pd.DataFrame(prediction_probability, columns=model.classes_)
@@ -136,16 +133,16 @@ with col1:
     with st.container():
         st.subheader('Model Prediction')
         
-        if st.session_state.button_clicked == 0:
+#         if st.session_state.button_clicked == 0:
             # Create a placeholder
-            placeholder = st.empty()
-            placeholder.text("Select prediction parameters and click 'Run Prediction' button")
+        placeholder = st.empty()
+        placeholder.text("Select prediction parameters and click 'Run Prediction' button")
 
-        if st.session_state.button_clicked == 1:
-            with st.spinner('Calculating Prediction...'):
-                time.sleep(2)
+#         if st.session_state.button_clicked == 1:
+        with st.spinner('Calculating Prediction...'):
+            time.sleep(2)
 
-            st.write(interpret_prediction(prediction))
+        placeholder.write(interpret_prediction(prediction))
            
 
 with col2:
