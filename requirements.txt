@@ -1,9 +1,9 @@
 streamlit
 shap
+ipython
 pandas
 numpy
-scikit-learn
+scikit-learn==0.24.2
+imbalanced-learn==0.8.0
 matplotlib
-plotly.express
-ipython
-imblearn
+plotly
