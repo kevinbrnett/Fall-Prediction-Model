@@ -96,18 +96,20 @@ user_input = user_input_features()
     
 image_path = 'Visuals/logo.png'
 
-col1, col2 = st.columns([0.25,0.75])
-with col1:
-    st.image(image_path, use_column_width=True)
-
+col1, col2, col3, col4 = st.columns([0.1,0.3,0.5,0.1])
+    
 with col2:
+    st.image(image_path, width=450)
+
+with col3:
     
     # Custom CSS
     custom_css = """
     <style>
     .custom-title {
-        font-size: 175px; /* Adjust the size as needed */
+        font-size: 120px; /* Adjust the size as needed */
         font-weight: bold;
+        text-align: center;
         color: #333; /* Adjust the color as needed */
         margin-bottom: 20px; /* Adjust the margin as needed */
     }
@@ -118,7 +120,8 @@ with col2:
     st.markdown(custom_css, unsafe_allow_html=True)
 
     # Title
-    st.markdown('<h1 class="custom-title">Fall Prediction Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="custom-title">Fall Prediction</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="custom-title">Dashboard</h1>', unsafe_allow_html=True)
     
 st.divider()
                                                    ### INFORMATIONAL SECTION ###
