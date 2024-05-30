@@ -130,8 +130,26 @@ col1, col3 = st.columns([0.6,0.4])
 
 with col1:
     with st.container(border=False):
+        # Custom CSS
+        custom_css = """
+        <style>
         
-        st.warning('Due to suboptimal data the current model used in this app should not be used for real-world patient predictions.')
+        .custom-warning {
+            font-size: 25px; /* Adjust the size as needed */
+            font-weight: bold;
+            text-align: center;
+            background-color: #fff3cd;
+            color: #B2612D; /* Adjust the color as needed */
+            margin-bottom: 20px; /* Adjust the margin as needed */
+            border-radius: 15px; /* Adjust border radius as needed */
+            padding: 30px; /* Adjust padding as needed */
+        }
+        </style>
+        """
+
+        # Inject the custom CSS style
+        st.markdown(custom_css, unsafe_allow_html=True)
+        st.markdown('<p class="custom-warning">Due to suboptimal data the current model used in this app is not recommended to be used for real-world patient predictions</p>', unsafe_allow_html=True)
         
         
 
@@ -149,11 +167,31 @@ with col1:
 
         # Inject the custom CSS style
         st.markdown(custom_css, unsafe_allow_html=True)
+        
+        # Custom CSS
+        custom_css = """
+        <style>
+        
+        .custom-info {
+            font-size: 22px; /* Adjust the size as needed */
+            background-color: #D3DFFF;
+            color: black; /* Adjust the color as needed */
+            margin-bottom: 20px; /* Adjust the margin as needed */
+            border-radius: 10px; /* Adjust border radius as needed */
+            padding: 30px; /* Adjust padding as needed */
+        }
+        </style>
+        """
+
+        # Inject the custom CSS style
+        st.markdown(custom_css, unsafe_allow_html=True)
+        
 
         # Title
         st.markdown('<h1 class="custom-about">About this App</h1>', unsafe_allow_html=True)
-
-        st.info('The purpose of this app is to make new predictions for an individual\'s fall risk based on six variables. In order to make predictions fill in the variables in the side bar and click the run prediction button. Prediction results will appear at the bottom of the app after calculating.')
+        
+        # Info
+        st.markdown('<p class="custom-info">The purpose of this app is to make new predictions for an individual\'s fall risk based on six variables. In order to make predictions fill in the variables in the side bar and click the run prediction button. Prediction results will appear at the bottom of the app after calculating.</p>', unsafe_allow_html=True)
         
         with st.container(border=False):
             col1, col2 = st.columns([0.7,0.3])
@@ -162,19 +200,23 @@ with col1:
             
                 # Title
                 st.markdown('<h1 class="custom-about">Definition of a Fall</h1>', unsafe_allow_html=True)
-
-                st.info('A fall is defined as a “sudden, not intentional, and unexpected movement from orthostatic position,\n\nfrom seat to position, or from clinical position”.')
+                
+                # Info
+                st.markdown('<p class="custom-info">A fall is defined as a “sudden, not intentional, and unexpected movement from orthostatic position, from seat to position, or from clinical position”.</p>', unsafe_allow_html=True)
 
                 # Title
                 st.markdown('<h1 class="custom-about">Importance of Falls in Hospitals</h1>', unsafe_allow_html=True)
-
-                st.info('Falls directly cost hospitals \$50 billion annually in the U.S.\n\nPatients who fall while in the hospital have $13,316 higher operational costs.\n\nCosts associated with falls are not re-imbursed by Medicare or Medicaid.')
+                
+                # Info
+                st.markdown('<p class="custom-info">Falls directly cost hospitals $50 billion annually in the U.S. Patients who fall while in the hospital have $13,316 higher operational costs. Costs associated with falls are not re-imbursed by Medicare or Medicaid.</p>', unsafe_allow_html=True)
 
             with col2:
                 # Title
                 st.markdown('<h1 class="custom-about">Fall Risk Factors</h1>', unsafe_allow_html=True)
+                
+                # Info
+                st.markdown('<p class="custom-info">1. Older than 85<br>2. Weight<br>3. History of falls<br>4. Mobility problems<br>5. Use of assistive devices<br>6. Medications<br>7. Mental status<br>8. Incontinence<br>9. Vision impairment</p>', unsafe_allow_html=True)
 
-                st.info('1. Older than 85\n\n2. Weight\n\n3. History of falls\n\n4. Mobility problems\n\n5. Use of assistive devices\n\n6. Medications\n\n7. Mental status\n\n8. Incontinence\n\n9. Vision impairment')
 
 
 with col3:
