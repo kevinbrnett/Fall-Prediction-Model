@@ -2,7 +2,8 @@ streamlit
 shap
 ipython
 pandas
-numpy
+setuptools<60.0
+numpy==1.23.0
 scikit-learn==0.24.2
 imbalanced-learn==0.8.0
 matplotlib
