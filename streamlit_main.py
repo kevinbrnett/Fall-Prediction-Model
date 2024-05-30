@@ -130,7 +130,7 @@ with col4:
         <style>
         .container {
             position: relative;
-            height: 400px;
+            height: 0px;
             border: 1px solid black;
         }
         .bottom-text {
