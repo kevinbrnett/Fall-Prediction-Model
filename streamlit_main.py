@@ -96,7 +96,7 @@ user_input = user_input_features()
     
 image_path = 'Visuals/logo.png'
 
-col1, col2, col3, col4 = st.columns([0.1,0.3,0.5,0.1])
+col1, col2, col3, col4 = st.columns([0.1,0.3,0.4,0.2])
     
 with col2:
     st.image(image_path, width=450)
