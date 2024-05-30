@@ -132,7 +132,6 @@ with col4:
             position: relative;
             height: 500px;
             width: 300px;
-            border: 1px solid black;
         }
         .bottom-text {
             position: absolute;
