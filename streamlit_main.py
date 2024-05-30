@@ -123,6 +123,10 @@ with col3:
     st.markdown('<h1 class="custom-title">Fall Prediction</h1>', unsafe_allow_html=True)
     st.markdown('<h1 class="custom-title">Dashboard</h1>', unsafe_allow_html=True)
     
+with col4:
+    st.markdown('<p class="custom-info">Model Owner: Kevin Barnett, Data Scientist<br>Data Source: Hospital Database.</p>', unsafe_allow_html=True)
+        
+    
 st.divider()
                                                    ### INFORMATIONAL SECTION ###
     
