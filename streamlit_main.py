@@ -125,20 +125,33 @@ with col3:
     
 with col4:
     
-     # Custom CSS
-    custom_css = """
-    <style>
-    .custom {
-        font-size: 15px; /* Adjust the size as needed */
-        bottom: 0;
-        margin: 0;
-        text-align: right;
-        color: #333; /* Adjust the color as needed */
-        margin-bottom: 0px; /* Adjust the margin as needed */
-    }
-    </style>
-    """
-    st.markdown('<p class="custom">Model Owner: Kevin Barnett, Data Scientist<br>Data Source: Hospital Database</p>', unsafe_allow_html=True)
+     # CSS for positioning text at the bottom
+        css = """
+        <style>
+        .container {
+            position: relative;
+            height: 200px;
+            border: 1px solid black;
+        }
+        .bottom-text {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            margin: 0;
+        }
+        </style>
+        """
+
+        # HTML content with the CSS class
+        html_content = """
+        <div class="container">
+          <p class="bottom-text">Model Owner: Kevin Barnett, Data Scientist<br>Data Source: Hospital Database</p>
+        </div>
+        """
+
+        # Display the HTML content with CSS in a Streamlit container
+        st.markdown(css + html_content, unsafe_allow_html=True)
         
     
 st.divider()
