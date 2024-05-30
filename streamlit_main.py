@@ -128,7 +128,7 @@ with col4:
      # CSS for positioning text at the bottom
         css = """
         <style>
-        .container {
+        .container1 {
             position: relative;
             height: 500px;
             border: 1px solid black;
@@ -145,7 +145,7 @@ with col4:
 
         # HTML content with the CSS class
         html_content = """
-        <div class="container">
+        <div class="container1">
           <p class="bottom-text">Model Owner: Kevin Barnett, Data Scientist<br>Data Source: Hospital Database</p>
         </div>
         """
