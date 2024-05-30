@@ -130,6 +130,9 @@ with col4:
     <style>
     .custom {
         font-size: 15px; /* Adjust the size as needed */
+        position: absolute;
+        bottom: 0;
+        margin: 0;
         text-align: right;
         color: #333; /* Adjust the color as needed */
         margin-bottom: 20px; /* Adjust the margin as needed */
