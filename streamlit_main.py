@@ -124,7 +124,19 @@ with col3:
     st.markdown('<h1 class="custom-title">Dashboard</h1>', unsafe_allow_html=True)
     
 with col4:
-    st.markdown('<p class="custom-info">Model Owner: Kevin Barnett, Data Scientist<br>Data Source: Hospital Database.</p>', unsafe_allow_html=True)
+    
+     # Custom CSS
+    custom_css = """
+    <style>
+    .custom {
+        font-size: 15px; /* Adjust the size as needed */
+        text-align: right;
+        color: #333; /* Adjust the color as needed */
+        margin-bottom: 20px; /* Adjust the margin as needed */
+    }
+    </style>
+    """
+    st.markdown('<p class="custom">Model Owner: Kevin Barnett, Data Scientist<br>Data Source: Hospital Database.</p>', unsafe_allow_html=True)
         
     
 st.divider()
